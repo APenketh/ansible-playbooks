@@ -1,0 +1,6 @@
+file_backup_enabled: False
+
+file_backup_paths:
+   - { path : "", path_name: "" }
+
+mysql_enabled: False

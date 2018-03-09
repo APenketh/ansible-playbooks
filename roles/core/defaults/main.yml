@@ -1,0 +1,6 @@
+# SWAP File Defaults - swap.yml
+swapfile_location: /swapfile
+swapfile_size: 1024
+swapfile_swappiness: False
+swapfile_vfs_cache_pressure: False
+swapfile_use_dd: True

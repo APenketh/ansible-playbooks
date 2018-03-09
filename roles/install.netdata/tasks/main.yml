@@ -1,0 +1,27 @@
+- name: Firewall | Add Rules
+  firewalld:
+    port: 19999/tcp
+    permanent: true
+    state: enabled
+
+#- name: Selinux | Add Content Rules
+#  seport: 
+#    ports: 19999
+#    proto: tcp
+#    setype: http_port_t
+#    state: present
+
+- name: Install Netdata From Github
+  shell: bash <(curl -Ss https://my-netdata.io/kickstart.sh) all --dont-wait
+
+- name: Configure Stream Config File
+  template:
+    src: ../templates/netdata-stream.j2
+    dest: /etc/netdata/stream.conf
+  notify: restart netdata
+
+- name: Set Netdata Config File
+  template:
+    src: ../templates/netdata-conf.j2
+    dest: /etc/netdata/netdata.conf
+  notify: restart netdata

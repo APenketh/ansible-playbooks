@@ -1,0 +1,35 @@
+- name: Perform File & Database Backup If Set To
+  hosts: all
+  serial: 1
+
+  tasks:
+  - name: Create The Temporary Directory For The MySQL Backup
+    file:
+      path: /tmp/{{ansible_date_time.date}}/mysql-backup
+      state: directory
+
+  - name: Perform A Full MySQL Backup If Set To
+    include: ../../roles/mysql.backup/tasks/main.yml
+    when: mysql_enabled == True
+
+  - name: Make Sure The Local Archive Directory For The Host Exists
+    file:
+      path: /mnt/s3/apbackups/{{inventory_hostname}}/{{ansible_date_time.date}}/mysql/
+      state: directory
+    delegate_to: ovh-twr01
+
+  - name: Copy Over The MySQL Backup To The Local Backup Location
+    command: rsync -avz ansible@{{inventory_hostname}}:/tmp/{{ansible_date_time.date}}/mysql-backup/ /mnt/s3/apbackups/{{inventory_hostname}}/{{ansible_date_time.date}}/mysql/
+    delegate_to: ovh-twr01
+
+  - name: Clean Up MySQL Backup Directory
+    file:
+      path: /tmp/{{ansible_date_time.date}}
+      state: absent
+
+  - name: Copy Over The Rest Of The Required Files
+    command: rsync -avz ansible@{{inventory_hostname}}:{{ item }} /mnt/s3/apbackups/{{inventory_hostname}}/{{ansible_date_time.date}}
+    with_items: "{{file_backup_paths}}"
+    delegate_to: ovh-twr01
+
+

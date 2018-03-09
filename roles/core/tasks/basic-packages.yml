@@ -1,0 +1,10 @@
+- name: Install Missing Basic Packages
+  yum:
+    name:  "{{ item }}"
+    state: latest
+  with_items:
+    - vim
+    - rsync
+    - git
+    - epel-release
+    - policycoreutils-python

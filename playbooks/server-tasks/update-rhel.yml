@@ -1,0 +1,16 @@
+- name: Update Server & Reboot If Required
+  hosts: all
+  serial: 1
+
+  tasks:
+  - name: Perform An Update Of All Packages
+    include: ../../roles/server.update/tasks/main.yml
+
+  - name: Check for reboot hint.
+    shell: LAST_KERNEL=$(rpm -q --last kernel | awk 'NR==1{sub(/kernel-/,""); print $1}'); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+    ignore_errors: true
+    register: reboot_hint
+
+  - name: Performing A Reboot If Required Due To New Kernel
+    include: ../../roles/server.reboot/tasks/main.yml
+    when: reboot_hint.stdout == "reboot"

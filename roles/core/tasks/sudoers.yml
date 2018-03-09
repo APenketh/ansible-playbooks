@@ -1,0 +1,14 @@
+- name: Create sudoers file from template.
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+    owner: root
+    group: root
+    mode: 0440
+    backup: yes
+    validate: 'visudo -cf %s'
+
+- name: Make sure sudoers.d doesn't exist
+  file:
+    path: /etc/sudoers.d
+    state: absent

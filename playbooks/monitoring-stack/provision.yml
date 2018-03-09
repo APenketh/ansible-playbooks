@@ -1,0 +1,137 @@
+- hosts: all
+  become: true
+
+  handlers:
+    - name: restart netdata
+      service:
+        name: netdata
+        state: restarted
+
+    - name: restart caddy
+      service:
+        name: caddy
+        state: restarted
+        enabled: yes
+
+    - name: restart firewalld
+      service: 
+        name: firewalld
+        state: restarted
+
+    - name: restart prometheus
+      service: 
+        name: prometheus
+        state: restarted
+        enabled: yes
+
+    - name: restart grafana
+      service: 
+        name: grafana-server
+        state: restarted
+        enabled: yes
+
+  roles:
+    - core
+#    - server.enable-selinux
+    - configure.vultr
+
+  tasks:
+    - name: Firewall | Add Rules For Webserver
+      firewalld:
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+      with_items:
+        - 80/tcp
+        - 443/tcp
+
+#    - name: Selinux | Add Content Rules
+#      seport:
+#        ports: 3000
+#        proto: tcp
+#        setype: http_port_t
+#        state: present
+
+    - name: Webserver | Install Caddy
+      yum:
+        name: caddy
+        state: latest
+
+    - name: Webserver | Install Config
+      template:
+        src: templates/CaddyFile
+        dest: /etc/caddy/CaddyFile
+      notify: restart caddy
+
+    - name: Netdata | Include Variables
+      include_vars: vars/netdata.yml
+
+    - name: Netdata | Change Stream Config File
+      template:
+        src: templates/netdata-stream.j2
+        dest: /etc/netdata/stream.conf
+      notify: restart netdata
+
+    - name: Netdata | Change Main Config File
+      template:
+        src: templates/netdata-conf.j2
+        dest: /etc/netdata/netdata.conf
+      notify: restart netdata
+
+    - name: Prometheus | Include Variables
+      include_vars: vars/prometheus.yml
+
+    - name: Prometheus | Make Directory
+      file:
+        path: /opt/prometheus
+        state: directory
+
+    - name: Prometheus | Adding Prometheus User
+      user:
+        user: prometheus
+ 
+    - name: Prometheus | Download Prometheus
+      get_url:
+        url: "{{ download_url  }}"
+        dest: /tmp/prometheus.tar.gz
+   
+    - name: Prometheus | Unarchive The Installation Media
+      shell: tar -xf /tmp/prometheus.tar.gz -C /opt/prometheus/ --strip-components 1
+
+    - name: Prometheus | Setting Up Promethus Configuration
+      template:
+        src: templates/prometheus.yml.j2
+        dest: /opt/prometheus/prometheus.yml
+
+    - name: Prometheus | Setting Correct File Permissions
+      file:
+        path: /opt/prometheus/
+        owner: prometheus
+        group: prometheus
+
+    - name: Prometheus | Adding In Prometheus Systemd Script
+      copy:
+        src: files/prometheus.service
+        dest: /etc/systemd/system/prometheus.service
+
+    - name: Prometheus | Reload systemctl daemon 
+      command: systemctl daemon-reload
+      notify: restart prometheus
+
+    - name: Grafana | Adding Repository
+      copy:
+        src: files/grafana.repo
+        dest: /etc/yum.repos.d/grafana.repo
+
+    - name: Grafana | Installation
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - initscripts
+        - fontconfig
+        - grafana 
+      notify: restart grafana
+
+    - name: Systemctl | Daemon Reload
+      command: systemctl daemon-reload

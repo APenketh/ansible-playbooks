@@ -1,0 +1,7 @@
+- name: Setting Up Promethus Configuration
+  template:
+    src: ../templates/prometheus.yml.j2
+    dest: /opt/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+  notify: restart prometheus

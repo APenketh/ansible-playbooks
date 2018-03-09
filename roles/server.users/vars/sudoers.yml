@@ -1,0 +1,7 @@
+user_privileges:
+  personal:
+    id: example
+    sudoers: "ALL = (ALL) NOPASSWD: ALL"
+  ansible: 
+    id: ansible
+    sudoers: "ALL = (ALL) NOPASSWD: ALL"

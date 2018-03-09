@@ -1,0 +1,9 @@
+- name: Selinux | Enable In Config File
+  copy:
+    src: ../files/config
+    dest: /etc/selinux/config
+
+- name: SeLinux | Enable On The Fly
+  selinux:
+    policy: targeted
+    state: enforcing

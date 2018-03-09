@@ -1,0 +1,8 @@
+- name: reboot host
+  command: /usr/bin/systemd-run --on-active=10 /usr/bin/systemctl reboot
+  async: 0
+  poll: 0
+
+- name: wait for host sshd
+  pause:
+    minutes: 2

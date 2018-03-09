@@ -1,0 +1,31 @@
+- name: Include Basic Packages Installation
+  include: basic-packages.yml
+
+- name: Include The Addition Of Pre-defined Users
+  include_role: 
+    name: server.users
+
+- name: Include Configuration Of Sudoers File
+  include: sudoers.yml
+
+- name: Include SSHD Config
+  include: sshd-config.yml
+
+- name: Include SWAP File Creation
+  include: swap.yml
+
+- name: Install Netdata
+  include_role: 
+    name: install.netdata
+
+- name: Update Hosts File
+  include_role: 
+    name: configure.hostfile
+
+- name: Update Server | Latest Packages
+  include_role: 
+    name: server.update
+
+- name: Reboot The Server To Apply Updates
+  include_role: 
+    name: server.reboot

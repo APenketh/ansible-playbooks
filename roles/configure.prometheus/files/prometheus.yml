@@ -1,0 +1,38 @@
+global:
+  scrape_interval:     5s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 5s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+  external_labels:
+      monitor: '"tpc-co-prom01"'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+scrape_configs:
+  - job_name: 'prometheus'
+
+    static_configs:
+      - targets: ['0.0.0.0:9090']
+
+  - job_name: 'tpc-co-netdata01'
+
+    metrics_path: '/api/v1/allmetrics'
+    params:
+      format: [prometheus]
+    honor_labels: true
+    
+    static_configs:
+      - targets: ['172.23.24.66:19999']
+
+  - job_name: 'tpc-ntv-pre00'
+
+    metrics_path: '/host/tpc-ntv-pre00/api/v1/allmetrics'
+    params:
+      format: [prometheus]
+    honor_labels: true
+    
+    static_configs:
+      - targets: ['172.23.24.66:19999']
+

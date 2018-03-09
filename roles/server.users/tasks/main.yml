@@ -1,0 +1,33 @@
+- name: Include Sudoers Variable File
+  include_vars: vars/sudoers.yml
+
+- name: Make Sure Users Exist
+  user:
+    user: "{{ item.value.id }}"
+  with_dict: "{{ user_privileges }}"
+
+- name: Create Sudoers File From Template
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+    owner: root
+    group: root
+    mode: 0440
+    backup: yes
+    validate: 'visudo -cf %s'
+
+- name: Create authorized_keys Directory If It Doesnt Exist
+  file:
+    path: /etc/ssh/authorized_keys
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Synchronise Pubkeys To Server
+  synchronize:
+    src: pubkeys/
+    dest: /etc/ssh/authorized_keys/
+    owner: no
+    group: no
+    perms: no

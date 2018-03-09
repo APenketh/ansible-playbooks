@@ -1,0 +1,19 @@
+# -----------------------------------------------------------------------------
+# SLAVE NETDATA SETTINGS
+
+[stream]
+    enabled = yes
+
+    destination = {{ netdata_master }}
+
+    api key = {{ netdata_uuid }}
+
+    timeout seconds = 60
+
+    default port = 19999
+
+    buffer size bytes = 1048576
+
+    reconnect delay seconds = 5
+
+    initial clock resync iterations = 60

@@ -1,0 +1,20 @@
+---
+# This playbook backups all mysql databases into separate files.
+
+- name: Read Role Specific Variables
+  include_vars: ../vars/excluded-databases.yml
+
+- name: Making Sure The Correct Packages Exist To Perform The Task
+  yum:
+    name: MySQL-python
+    state: present
+
+- name: get db names
+  shell: 'mysql -e "show databases;" '
+  register: dblist
+- name: backup databases
+  mysql_db:
+    state: dump
+    name: "{{ item }}"
+    target: "/tmp/{{ansible_date_time.date}}/mysql-backup/{{ item }}.sql"
+  with_items: "{{ dblist.stdout_lines | difference(exclude_db) }}"
